@@ -5,25 +5,25 @@ package inspection
 import (
 	"context"
 	"fmt"
-	"time"
-
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/lib/log"
+	es "github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/data/consumers/es"
+	osearch "github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/data/consumers/opensearch"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/log"
+	"time"
 
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/policy/enforcement"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/policy/enforcement"
 
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/policy"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/policy"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/api/v1alpha1"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/data"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/data/core"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/data/providers"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/runtime/grpool"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/api/v1alpha1"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/data"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/data/core"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/data/providers"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/runtime/grpool"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -42,7 +42,6 @@ type Controller interface {
 
 type controller struct {
 	kc     client.Client
-	logger logr.Logger
 	scheme *runtime.Scheme
 	ready  bool
 
@@ -60,12 +59,6 @@ func (c *controller) WithK8sClient(cli client.Client) *controller {
 	return c
 }
 
-// WithLogger sets logger.
-func (c *controller) WithLogger(logger logr.Logger) *controller {
-	c.logger = logger
-	return c
-}
-
 // WithScheme sets runtime scheme.
 func (c *controller) WithScheme(scheme *runtime.Scheme) *controller {
 	c.scheme = scheme
@@ -77,7 +70,6 @@ func (c *controller) CTRL() Controller {
 	c.scanner = NewScanner().
 		WithScheme(c.scheme).
 		UseClient(c.kc).
-		SetLogger(c.logger).
 		Complete()
 
 	// Mark controller is ready.
@@ -97,13 +89,13 @@ func (c *controller) EnsureSettings(ctx context.Context, policy *v1alpha1.Inspec
 	}
 	if err := c.kc.Get(ctx, namespaced, setting); err != nil {
 		if !apierrors.IsNotFound(err) {
-			c.logger.Error(err, "unable to get setting")
+			log.Error(err, "unable to get setting")
 		}
 		return nil, err
 	}
 	// if data source is disabled, return error.
 	if setting.Spec.DataSource.Disabled {
-		c.logger.Info("The data source in settings is disabled")
+		log.Info("The data source in settings is disabled")
 		return nil, errors.New("Data source in settings is disabled!")
 	}
 
@@ -113,7 +105,7 @@ func (c *controller) EnsureSettings(ctx context.Context, policy *v1alpha1.Inspec
 
 // Run implements Controller.
 func (c *controller) Run(ctx context.Context, policy *v1alpha1.InspectionPolicy) error {
-	logFromContext := log.FromContext(ctx)
+	log.Info("In inspection controller...")
 	if policy == nil {
 		return errors.New("empty inspection policy config to runtime")
 	}
@@ -123,11 +115,10 @@ func (c *controller) Run(ctx context.Context, policy *v1alpha1.InspectionPolicy)
 	}
 
 	// Get related security data first.
-	//adapter, err := providers.NewProvider(ctx, c.kc, nil)
 	setting, err := c.EnsureSettings(ctx, policy)
 
 	if err != nil {
-		logFromContext.Error(err, "unable to ensure the settings in inspection policy")
+		log.Error(err, "unable to ensure the settings in inspection policy")
 		return err
 	}
 
@@ -147,7 +138,7 @@ func (c *controller) Run(ctx context.Context, policy *v1alpha1.InspectionPolicy)
 	// Nothing to handle
 	// Just in case.
 	if len(nsl) == 0 {
-		c.logger.V(1).Info("no namespaces found")
+		log.Info("no namespaces found")
 		return nil
 	}
 
@@ -227,7 +218,7 @@ func (c *controller) Run(ctx context.Context, policy *v1alpha1.InspectionPolicy)
 						// request data if artifact not found
 						reqErr := adapter.Request(ctx, aid)
 						if reqErr != nil {
-							c.logger.Error(reqErr, "request data", "artifactID", aid)
+							log.Error(reqErr, "request data", "artifactID", aid)
 						}
 					}
 					// Treat as failure so far.
@@ -281,19 +272,19 @@ func (c *controller) Run(ctx context.Context, policy *v1alpha1.InspectionPolicy)
 	}
 
 	// Scan workload in parallel.
-	pool := grpool.WithContext(ctx).WithLogger(c.logger)
+	pool := grpool.WithContext(ctx)
 	pool.Start()
 	defer pool.Close()
 
 	if err := pool.Plan(len(nsl)); err != nil {
-		c.logger.Error(err, "plan queue size error")
+		log.Error(err, "plan queue size error")
 		return err
 	}
 
 	inspect := inspectFac()
 
 	for _, ns := range nsl {
-		c.logger.Info("Scan workloads under namespace", "namespace", ns)
+		log.Info("Scan workloads under namespace", "namespace", ns)
 
 		// Add namespace assessment to the report.
 		na := &v1alpha1.NamespaceAssessment{
@@ -316,7 +307,7 @@ func (c *controller) Run(ctx context.Context, policy *v1alpha1.InspectionPolicy)
 				}
 
 				for _, wl := range wls {
-					c.logger.Info("Inspecting workload", "namespace", wl.Namespace, "name", wl.Name)
+					log.Info("Inspecting workload", "namespace", wl.Namespace, "name", wl.Name)
 
 					wla := inspect(*wl)
 					nsAssessment.WorkloadAssessments = append(nsAssessment.WorkloadAssessments, wla)
@@ -347,6 +338,78 @@ func (c *controller) Run(ctx context.Context, policy *v1alpha1.InspectionPolicy)
 		}
 	}
 
+	// Read config from InspectionPolicy, save assessment reports to ES if elasticsearch enabled.
+	if policy.Spec.Inspection.Assessment.ElasticSearchEnabled {
+		log.Info("Start saving to ES ", "namespace", nil)
+		if err := exportReportToES(report, policy); err != nil {
+			return err
+		}
+	}
+	// Read config from InspectionPolicy, save assessment reports to OpenSearch if opensearch enabled.
+	if policy.Spec.Inspection.Assessment.OpenSearchEnabled {
+		if err := exportReportToOpenSearch(report, policy); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func exportReportToOpenSearch(report *v1alpha1.AssessmentReport, policy *v1alpha1.InspectionPolicy) error {
+	client := osearch.NewClient([]byte{},
+		policy.Spec.Inspection.Assessment.OpenSearchAddr,
+		policy.Spec.Inspection.Assessment.OpenSearchUser,
+		policy.Spec.Inspection.Assessment.OpenSearchPasswd)
+	if client == nil {
+		log.Info("OpenSearch client is nil")
+	}
+	exporter := osearch.OpenSearchExporter{Client: client}
+	err := exporter.NewExporter(client, "assessment_report")
+	if err != nil {
+		return err
+	}
+	if err := exporter.Save(*report); err != nil {
+		return err
+	}
+	return nil
+}
+
+func exportReportToES(report *v1alpha1.AssessmentReport, policy *v1alpha1.InspectionPolicy) error {
+	cert := []byte(policy.Spec.Inspection.Assessment.ElasticSearchCert)
+
+	type args struct {
+		cert     []byte
+		addr     string
+		username string
+		passwd   string
+	}
+	// password: kubectl get secret instanceName-es-elastic-user -o go-template='{{.data.elastic | base64decode}}'
+	clientArgs := args{
+		cert,
+		policy.Spec.Inspection.Assessment.ElasticSearchAddr,
+		policy.Spec.Inspection.Assessment.ElasticSearchUser,
+		policy.Spec.Inspection.Assessment.ElasticSearchPasswd,
+	}
+	log.Info("ES config: ", "addr", clientArgs.addr)
+	log.Info("ES config: ", "clientArgs.username", clientArgs.username)
+	client := es.NewClient(clientArgs.cert, clientArgs.addr, clientArgs.username, clientArgs.passwd)
+	if client == nil {
+		log.Info("ES client is nil")
+	}
+
+	if err := es.TestClient(); err != nil {
+		log.Info("client test error")
+		return err
+	}
+	exporter := es.ElasticSearchExporter{Client: client}
+	err := exporter.NewExporter(client, "assessment_report")
+	if err != nil {
+		return err
+	}
+
+	if err := exporter.Save(*report); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -359,7 +422,7 @@ func (c *controller) enforcePolicies(ctx context.Context, report *v1alpha1.Asses
 			policy.WithScheme(c.scheme))
 		if err != nil {
 			// Log error and continue.
-			c.logger.Error(err, "get enforcer", "enforcer", act)
+			log.Error(err, "get enforcer", "enforcer", act)
 			continue
 		}
 
@@ -370,7 +433,7 @@ func (c *controller) enforcePolicies(ctx context.Context, report *v1alpha1.Asses
 				managed, err := enforcer.IsManaged(ctx, &wla.Workload)
 				if err != nil {
 					// Just logged for easy troubleshooting.
-					c.logger.Error(err, "check if workload has been enforced the policy action", "workload", wla.Workload, "action", act)
+					log.Error(err, "check if workload has been enforced the policy action", "workload", wla.Workload, "action", act)
 				}
 
 				if !wla.Passed {

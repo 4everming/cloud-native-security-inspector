@@ -4,10 +4,11 @@ package data
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 
-	"github.com/vmware-tanzu/cloud-native-security-inspector/api/v1alpha1"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/data/core"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/data/types"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/api/v1alpha1"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/data/core"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/data/types"
 )
 
 // ReadOptions contains options for client reading.
@@ -67,4 +68,8 @@ type Register interface {
 type Configurator interface {
 	// ApplyConfig applies configurations to data source.
 	ApplyConfig(ctx context.Context, ds v1alpha1.DataSource) error
+}
+
+type Artifact interface {
+	GetVulnerabilitiesList(ctx context.Context, id core.ArtifactID) (*vuln.Report, error)
 }

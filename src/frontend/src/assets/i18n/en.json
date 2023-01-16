@@ -1,5 +1,7 @@
 {
   "CommonlyUse": {
+    "test": "Test",
+    "new": "New",
     "now": "Now",
     "ok": "Ok",
     "name": " Name",
@@ -7,6 +9,7 @@
     "create_time": "Create Time",
     "action": "Action",
     "version": "Version",
+    "fix_version": "fix_version",
     "annotations": "Annotations",
     "api_version": "ApiVersion",
     "type": "Type",
@@ -15,6 +18,7 @@
     "image": "Image",
     "container": "container",
     "containers": "Containers",
+    "details": "Details",
     "result": "result",
     "summary": "Summary",
     "time_stamp": "Latest scanning timestamp",
@@ -25,13 +29,17 @@
     "violations": "Violations",
     "containers_total": "The number of vulnerable containers",
     "status": "Status",
-    "workload_amount": "Workload Amount",
+    "workload_amount": "Number of Workloads",
     "reset": "Reset",
     "update": "Update",
     "create": "Create",
     "cancel": "Cancel",
     "delete": "Delete",
-    "inspectionNamespace": "Inspection Namespace"
+    "inspectionNamespace": "Work Namespace",
+    "description": "Description",
+    "scanInspector": "Scanners",
+    "typeId": "Type ID",
+    "information": "Information"
   },
   "Header": {
     "title": "Cloud Native Security Inspector"
@@ -39,7 +47,10 @@
   "Nav": {
     "Assessments": {
       "title": "Assessments",
-      "report_view": "Reports"
+      "report_view": "Reports",
+      "Kube_bench": "Kubebench Scanning Reports",
+      "image_nspector_reports": "Image Scanning Reports",
+      "risk": "Risk Scanning Reports"
     },
     "Insight": {
       "title": "Insight",
@@ -67,7 +78,7 @@
     "assessment": "Assessment",
     "format": "Format",
     "generate": "Generate",
-    "live_time": "LiveTime",
+    "live_time": "Live Time",
     "managedBy": "ManagedBy",
     "baselines": "Baselines",
     "baseline": "Baseline",
@@ -75,14 +86,18 @@
     "data_provider": "Data Provider",
     "endpoint": "Endpoint",
     "provider": "Provider",
-    "namespace_assessments": "NamespaceAssessments",
+    "namespace_assessments": "Namespace Assessments",
     "action_enforcements": "Action Enforcements",
     "resource_version": " Resource Version",
     "isInit": "IsInit",
     "failures": "Failures",
     "cause": "Cause",
-    "error_message": "Error Message"
+    "error_message": "Error Message",
+    "pod_list": "Pods List"
 
+  },
+  "Risk_view": {
+    "numberOfVulnerabilities": "number of vulnerabilities"
   },
   "Cluster": {
     "kubernetes_version": "Kubernetes version",
@@ -98,6 +113,7 @@
     "passed": "Passed"
   },
   "Policy": {
+    "policy": "Policy",
     "title": "Policy Setting",
     "name": "Policy Name",
     "type": "Policy Type",
@@ -113,17 +129,17 @@
     "historyLimit": "HistoryLimit",
     "suspend": "Suspend",
     "actions": "Actions",
-    "baselines": "Baselines",
+    "baselines": "Baselines (for harbor image inspector)",
     "kind": "Kind",
-    "generate": "Generate",
+    "generate": "Generate Report",
     "format": "Format",
-    "live_time": "LiveTime",
+    "live_time": "Live Time(seconds)",
     "managedBy": "ManagedBy",
     "scheme": "Scheme",
     "baseline": "Baseline",
 
     "concurrencyRule": "ConcurrencyRule",
-    "imagePullPolicy": "ImagePullPolicy",
+    "imagePullPolicy": "Image Pull Policy",
     "information": "DataProvider Information",
     "username": "Username",
     "password": "Password",
@@ -135,9 +151,20 @@
     "key": "key",
     "value": "value",
     "settingsName": "Settings Name",
-    "enabled": "Enabled Settings"
+    "enabled": "Enabled Settings",
+    "elasticSearchEnabled": "ElasticSearch",
+    "elasticSearchAddr": "Address",
+    "elasticSearchUser": "User",
+    "elasticSearchPasswd": "Password",
+    "elasticSearchCert": "Certificate",
+    "openSearchEnabled": "OpenSearch",
+    "workNamespace": "Work Namespace",
+    "image": "Image URL"
+
   },
   "Setting": {
+    "Settings": "Settings",
+    "settingView": "Setting View",
     "policy": "Policy Config",
     "harbor": "Harbor Config",
     "cache": "Cache",
@@ -145,29 +172,30 @@
     "data_source": "DataSource",
     "credential_name": "Credential Name",
     "credential_namespace": "Credential Namespace",
-    "known_registries": "KnownRegistries",
+    "known_registries": "Known Registries",
     "Secret": "Secret Data",
-    "accessKey": "accessKey",
-    "accessSecret": "accessSecret",
+    "accessKey": "Access Key",
+    "accessSecret": "Access Secret",
     "skipTLSVerify": "Skip TLS Verify",
     "address": "Address",
-    "livingTime": "LivingTime",
+    "livingTime": "Living Time",
     "secretNamespace": "Secret Namespace",
     "secretName": "Secret Name",
     "RequiredFields": "Required Fields",
     "setting_name": "Setting Name",
     "provider": "provider",
     "createSecret": "Create Secret",
+    "createSetting": "Create Setting",
     "addKnown": "Add Known Registry",
     "removeKnown": "Remove Known Registry",
     "inspectionSetting": "Inspection Setting",
-    "inspectionDesc": "Basic configuration items, the following contents are all required items.",
+    "inspectionDesc": "Basic configuration items (mandatory)",
     "InspectionStandard": "Inspection standard Setting",
-    "InspectionStandardDesc": "Inspections baseline criteria and filters conform to selector settings.",
+    "InspectionStandardDesc": "Inspections baseline criteria and filters conform to selector settings",
     "InspectionResult": "Inspection Result Setting",
-    "InspectionResultDesc": "Inspection Results and Action Configuration.",
-    "known_registriesDesc": "Register with other harbors, not required.",
-    "cacheDesc": "Cache related configuration, not required."
+    "InspectionResultDesc": "Inspection Results and Action Configuration",
+    "known_registriesDesc": "Register with other harbors (optional)",
+    "cacheDesc": "Cache related configuration (optional)"
   },
   "cornJob": {
     "Weekly": "Run once a week at midnight on Sunday morning",
@@ -176,6 +204,18 @@
     "ExecutionType": "Execution Type",
     "execute Once": "execute once",
     "executeMultiple times": "execute multiple times"
+  },
+  "Kube_bench_list": {
+    "title": "Kube Bench Reports",
+    "node_type": "Node Type",
+    "node_name": "Node Name",
+    "passed": "Passed",
+    "failed": "Failed",
+    "warned": "Warned",
+    "inform": "Inform",
+    "reason": "Reason",
+    "status": "Status",
+    "remediation": "Remediation"
   },
   "en": "English",
   "zh_CN": "中文 (简体)"

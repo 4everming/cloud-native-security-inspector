@@ -5,7 +5,7 @@
 
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment'
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AssessmentReportType, AssessmentType, InspectionPolicyType, PolicyItemType, InspectionType, InspectionItemType } from './policy-model-type'
 import { Observable } from 'rxjs';
 @Injectable({
@@ -15,12 +15,18 @@ export class PolicyService {
   public environment:any = environment
   constructor(private http: HttpClient) { }
 
-  getAssessmentreports() :Observable<AssessmentReportType>{
-    return this.http.get<AssessmentReportType>(this.environment.api.goharbor + '/assessmentreports')
+  getAssessmentreports(limit:number = 10, continues:string='') :Observable<AssessmentReportType>{
+    // return this.http.get<AssessmentReportType>(this.environment.api.goharbor + `/assessmentreports`)
+    return this.http.get<AssessmentReportType>(this.environment.api.goharbor + `/assessmentreports?limit=${limit}&continue=${continues}`)
   }
 
-  getNamespaceAssessmentreports(namespace: string ='default') :Observable<AssessmentReportType>{
-    return this.http.get<AssessmentReportType>(this.environment.api.goharbor + `/namespace/${namespace}/assessmentreports`)
+  getAllAssessmentreports() :Observable<AssessmentReportType>{
+    return this.http.get<AssessmentReportType>(this.environment.api.goharbor + `/assessmentreports`)
+  }
+
+
+  getNamespaceAssessmentreports(namespace: string ='default', limit:number = 10, continues:string='') :Observable<AssessmentReportType>{
+    return this.http.get<AssessmentReportType>(this.environment.api.goharbor + `/namespaces/${namespace}/assessmentreports?limit=${limit}&continue=${continues}`)
   }
 
   getAssessmentreportStatus (namespace:string, name:string) {
@@ -70,5 +76,21 @@ export class PolicyService {
 
   getNamespacesAssessmentreportStatus(namespace: string,name:string) :Observable<AssessmentType> {
     return this.http.get<AssessmentType>(this.environment.api.goharbor + '/namespaces/'+namespace +'/assessmentreports'+ name + '/status')
+  }
+
+  elasticSearchTest(data: any) {
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'Accept':  'application/json',
+        'Authorization':'Basic '+window.btoa(data.username+':'+data.password)
+      }),
+      cert: data.cert
+    }    
+    // return this.http.get<AssessmentType>('local', httpOptions);
+    return this.http.post<AssessmentType>('/es-test', {
+      url: data.url,
+      basic: window.btoa(data.username+':'+data.password),
+      cert: data.cert
+    });
   }
 }

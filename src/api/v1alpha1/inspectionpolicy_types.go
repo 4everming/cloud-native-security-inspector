@@ -14,6 +14,15 @@ const (
 	PolicySuspend = "Suspend"
 )
 
+const (
+	// CronjobInpsection describes the Inspection type of cronjob.
+	CronjobInpsection = "Inpection"
+	// CronjobKubebench describes the Kubebench type of the cronjob.
+	CronjobKubebench = "Kubebench"
+	// CronjobRisk describes the Risk type of the cronjob.
+	CronjobRisk = "Risk"
+)
+
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
@@ -75,6 +84,36 @@ type Assessment struct {
 	// If it is set to true, then the assessment report is owned by the policy.
 	// +kubebuilder:default:=false
 	ManagedBy bool `json:"managedBy"`
+	// Indicate whether to store the reports to elasticsearch
+	// +kubebuilder:default:=false
+	ElasticSearchEnabled bool `json:"elasticSearchEnabled"`
+	// ElasticSearch endpoint
+	// +kubebuilder:validation:Optional
+	ElasticSearchAddr string `json:"elasticSearchAddr"`
+	// ElasticSearch username for the client
+	// +kubebuilder:validation:Optional
+	ElasticSearchUser string `json:"elasticSearchUser"`
+	// ElasticSearch password for the client
+	// +kubebuilder:validation:Optional
+	ElasticSearchPasswd string `json:"elasticSearchPasswd"`
+	// ElasticSearch certificate for the client
+	// +kubebuilder:validation:Optional
+	ElasticSearchCert string `json:"elasticSearchCert"`
+	// Indicate whether to store the reports to opensearch
+	// +kubebuilder:default:=false
+	OpenSearchEnabled bool `json:"openSearchEnabled"`
+	// ElasticSearch endpoint
+	// +kubebuilder:validation:Optional
+	OpenSearchAddr string `json:"openSearchAddr"`
+	// ElasticSearch username for the client
+	// +kubebuilder:validation:Optional
+	OpenSearchUser string `json:"openSearchUser"`
+	// ElasticSearch password for the client
+	// +kubebuilder:validation:Optional
+	OpenSearchPasswd string `json:"openSearchPasswd"`
+	// ElasticSearch certificate for the client
+	// +kubebuilder:validation:Optional
+	OpenSearchCert string `json:"openSearchCert"`
 }
 
 // FollowupAction defines what actions should be applied when security expectations are matched.
@@ -143,8 +182,14 @@ type Strategy struct {
 // Inspector contains the image configuration of the inspector.
 type Inspector struct {
 	// Image of the inspector.
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
 	Image string `json:"image"`
+	// Image of the kubebench.
+	// +kubebuilder:validation:Optional
+	KubebenchImage string `json:"kubebenchImage"`
+	// Image of the risk.
+	// +kubebuilder:validation:Optional
+	RiskImage string `json:"riskImage"`
 	// Image pull policy.
 	// +kubebuilder:default:=IfNotPresent
 	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy"`
@@ -194,8 +239,18 @@ type InspectionPolicyStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Executor of this policy. It is always an object reference to the underlying cronjob.
-	Executor *corev1.ObjectReference `json:"executor"`
+	// InspectionExecutor of this policy. It is always an object reference to the underlying cronjob.
+	// +kubebuilder:validation:Optional
+	InspectionExecutor *corev1.ObjectReference `json:"inspectionExecutor"`
+
+	// KubebenchExecutor of this policy. It is always an object reference to the underlying cronjob.
+	// +kubebuilder:validation:Optional
+	KubebenchExecutor []*corev1.ObjectReference `json:"kubebenchExecutor"`
+
+	// RiskExecutor of this policy. It is always an object reference to the underlying cronjob.
+	// +kubebuilder:validation:Optional
+	RiskExecutor *corev1.ObjectReference `json:"riskExecutor"`
+
 	// Status of the policy.
 	// Pending, Standby, Suspend.
 	Status string `json:"status"`

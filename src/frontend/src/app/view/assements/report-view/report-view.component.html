@@ -4,36 +4,46 @@
 -->
 
 <div class="report">
-  <h2>{{'Report_View.title'|translate}}</h2>
-  <app-line id='report-line' #reportline [chartOptions]="shardService.reportLineChartOption"></app-line>
+  <h2>
+    
+    {{'Report_View.title'|translate}}</h2>
+    <div id="report-line" style="flex: 1;height:450px; overflow: hidden;"> </div>
 
-  <clr-datagrid>
-    <clr-dg-column [clrDgField]="'metadata.name'">{{'CommonlyUse.name'|translate}}</clr-dg-column>
-    <clr-dg-column [clrDgField]="'metadata.namespace'">{{'CommonlyUse.namespace'|translate}}</clr-dg-column>
-    <clr-dg-column [clrDgField]="'metadata.creationTimestamp'">{{'CommonlyUse.create_time'|translate}}</clr-dg-column>
-    <clr-dg-column [clrDgField]="'updated_by'">{{'CommonlyUse.action'|translate}}</clr-dg-column>
-
+  <clr-datagrid style="height: 450px; overflow: auto;" (clrDgRefresh)="pageChange($event)">
+    <clr-dg-column [clrDgField]="'metadata.namespace'">{{'CommonlyUse.name'|translate}}</clr-dg-column>
+    <clr-dg-column class="namespace-filter">
+      {{'CommonlyUse.namespace'|translate}}
+      <cds-icon shape="filter-grid" class="is-solid" (click)="namespaceFilterFlag = !namespaceFilterFlag"></cds-icon>
+      <div class="filter-warp" *ngIf="namespaceFilterFlag">
+        <cds-icon style="position: absolute; right: 10px; top: 10px;" shape="window-close" (click)="namespaceFilterFlag=false"></cds-icon>
+        <app-dg-filter [pageSize]="defaultSize" [continues]="continues">
+        </app-dg-filter>
+      </div>
+    </clr-dg-column>
+    <clr-dg-column >{{'CommonlyUse.create_time'|translate}}</clr-dg-column>
     <clr-dg-row *clrDgItems="let report of shardService.reportslist">
       <clr-dg-cell>
-        {{report.metadata.name}}
+        <a href="javascript:;" (click)="toReport(report)" >
+          <cds-icon style="color: skyblue; cursor: pointer;" shape="pop-out"></cds-icon>
+          {{report.metadata.name}}
+        </a>
       </clr-dg-cell>
       <clr-dg-cell>{{report.metadata.namespace}}</clr-dg-cell>
       <clr-dg-cell>{{report.metadata.creationTimestamp}}</clr-dg-cell>
-      <clr-dg-cell>
-        <clr-icon (click)="toReport(report)" style="color: skyblue" shape="pop-out"></clr-icon>
-      </clr-dg-cell>
-
     </clr-dg-row>
-
     <clr-dg-footer>
-      <clr-dg-pagination #poolpagination [clrDgTotalItems]="shardService.violationList.length">
-        <clr-dg-page-size [clrPageSizeOptions]="pageSizeOptions">reports per page</clr-dg-page-size>
-        {{poolpagination.firstItem + 1}} - {{poolpagination.lastItem + 1}} of {{shardService.violationList.length}} Pools
+      <clr-dg-pagination #pagination [clrDgPageInputDisabled]="true" [clrDgPageSize]="defaultSize" [clrDgLastPage]="pageMaxCount">
+          <clr-dg-page-size [clrPageSizeOptions]="[10,20,50,100]">Reports per page</clr-dg-page-size>
+          {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+          of {{pagination.totalItems}} reports
       </clr-dg-pagination>
-    </clr-dg-footer>
+  </clr-dg-footer>
+  
   </clr-datagrid>
-  <div class="report-detai-bg" (click)='showDetail($event)' [hidden]="!(shardService.currentReport && showDetail)">
-    <div class="report-detai" [ngClass]="{'show': showDetailFlag}" >
+  <div id="box" class="report-detai-bg" (click)='showDetail($event)' [hidden]="!(shardService.currentReport && showDetail)">
+    <div id="left" class="report-detai-left"></div>
+    <div id="resize"></div>
+    <div id="right" class="report-detai" [ngClass]="{'show': showDetailFlag}" >
       <app-report-view-detail #reportDetail></app-report-view-detail>
     </div>
   </div>

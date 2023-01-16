@@ -1,0 +1,50 @@
+<div class="report">
+  <h2>{{'Nav.Assessments.risk'|translate}}</h2>
+  <!-- echarts -->
+  <div class="echarts-loading" *ngIf="echartsLoading">
+    <span class="spinner spinner-lg">
+      Loading...
+    </span>
+  </div>
+  <div id="risk" style="flex:1;height:450px; overflow: hidden;"> </div>
+
+  <clr-datagrid  [clrDgLoading]="dgLoading" (clrDgRefresh)="pageChange($event)">
+    <clr-dg-column >ID</clr-dg-column>
+    <clr-dg-column >
+      <div class="sort">
+        {{'CommonlyUse.create_time'|translate}}
+      </div>
+    </clr-dg-column>
+    <clr-dg-column >{{'Risk_view.numberOfVulnerabilities'|translate}}</clr-dg-column>
+  
+    <clr-dg-row *clrDgItems="let kube of riskList">
+      <clr-dg-cell *ngIf="kube" >
+        <a style="cursor: pointer;" (click)="showDetail(kube)" href="javascript:;">
+          <cds-icon style="color: skyblue" shape="pop-out"></cds-icon>
+          {{kube._id}}
+        </a>
+      </clr-dg-cell>
+      <clr-dg-cell *ngIf="kube" >{{kube._source.createTime | date: 'medium'}}</clr-dg-cell>
+      <clr-dg-cell *ngIf="kube" >
+        {{kube.risk_number}}
+      </clr-dg-cell>
+    </clr-dg-row>
+  
+    <clr-dg-footer>
+      <clr-dg-pagination #pagination [clrDgPageSize]="10" [clrDgLastPage]="pageMaxCount">
+          <clr-dg-page-size [clrPageSizeOptions]="[10,20,50,100]">Reports per page</clr-dg-page-size>
+          {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+          of {{pagination.totalItems}} reports
+      </clr-dg-pagination>
+  </clr-dg-footer>
+  
+  </clr-datagrid>
+<!-- detail -->
+  <div id="risk-box" class="report-detai-bg" (click)='hideDetai($event)' [hidden]="!showDetailFlag">
+    <div id="risk-left" class="report-detai-left"></div>
+    <div id="risk-resize"></div>
+    <div id="risk-right" class="report-detai" [ngClass]="{'show': showDetailFlag}" >
+      <app-risk-report-detail #riskDetail [detailInfo]="currentDetail"></app-risk-report-detail>
+    </div>
+  </div>
+</div>

@@ -37,7 +37,91 @@ import { AppService, createTranslateLoader } from './app.service';
 import { ClusterLineComponent } from './view/report/cluster-line/cluster-line.component';
 import { NamesapcePolarComponent } from './view/report/namesapce-polar/namesapce-polar.component';
 import { NamesapceHistogramComponent } from './view/report/namesapce-histogram/namesapce-histogram.component'
-import { ShardTestModule } from 'src/app/shard/shard/shard.module'
+import { ShardTestModule } from 'src/app/shard/shard/shard.module';
+import { DgFilterComponent } from './components/dg-filter/dg-filter.component';
+import { HarborSettingPageComponent } from './view/setting/harbor-setting-page/harbor-setting-page.component';
+import { PolicySettingPageComponent } from './view/policy/policy-setting-page/policy-setting-page.component';
+import { KubeBenchReportListComponent } from './view/assements/kube-bench-report-list/kube-bench-report-list.component';
+import { KubeBenchReportTestViewComponent } from './view/assements/kube-bench-report-test-view/kube-bench-report-test-view.component';
+import { KubeBenchReportTestDetailComponent } from './view/assements/kube-bench-report-test-detail/kube-bench-report-test-detail.component';
+import { KubeBenchReportComponent } from './view/assements/kube-bench-report/kube-bench-report.component';
+import { RiskReportViewComponent } from './view/assements/risk-report-view/risk-report-view.component';
+import { RiskReportDetailComponent } from './view/assements/risk-report-detail/risk-report-detail.component'
+import '@cds/core/icon/register.js';
+import { 
+  ClarityIcons,
+  worldIcon,
+  searchIcon,
+  bellIcon,
+  helpIcon,
+  userIcon,
+  lineChartIcon,
+  organizationIcon,
+  cogIcon,
+  fileSettingsIcon,
+  timesCircleIcon,
+  clockIcon,
+  filterGridIcon,
+  windowCloseIcon,
+  arrowIcon,
+  popOutIcon,
+  angleIcon,
+  checkCircleIcon,
+  exclamationCircleIcon,
+  exclamationTriangleIcon,
+  infoCircleIcon,
+  barsIcon,
+  detailsIcon,
+  successStandardIcon,
+  plusIcon,
+  noteIcon,
+  trashIcon,
+  pencilIcon,
+  networkGlobeIcon,
+  timesIcon,
+  plusCircleIcon,
+  minusCircleIcon,
+  cpuIcon,
+  memoryIcon
+} from '@cds/core/icon';
+
+ClarityIcons.addIcons(
+  userIcon,
+  worldIcon,
+  searchIcon,
+  bellIcon,
+  helpIcon,
+  lineChartIcon,
+  organizationIcon,
+  cogIcon,
+  fileSettingsIcon,
+  timesCircleIcon,
+  clockIcon,
+  filterGridIcon,
+  windowCloseIcon,
+  arrowIcon,
+  popOutIcon,
+  angleIcon,
+  checkCircleIcon,
+  exclamationCircleIcon,
+  exclamationTriangleIcon,
+  infoCircleIcon,
+  barsIcon,
+  detailsIcon,
+  successStandardIcon,
+  plusIcon,
+  noteIcon,
+  trashIcon,
+  pencilIcon,
+  networkGlobeIcon,
+  timesIcon,
+  plusCircleIcon,
+  minusCircleIcon,
+  cpuIcon,
+  memoryIcon
+);
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -64,7 +148,16 @@ import { ShardTestModule } from 'src/app/shard/shard/shard.module'
     TimePickerComponent,
     ClusterLineComponent,
     NamesapcePolarComponent,
-    NamesapceHistogramComponent
+    NamesapceHistogramComponent,
+    DgFilterComponent,
+    HarborSettingPageComponent,
+    PolicySettingPageComponent,
+    KubeBenchReportListComponent,
+    KubeBenchReportTestViewComponent,
+    KubeBenchReportTestDetailComponent,
+    KubeBenchReportComponent,
+    RiskReportViewComponent,
+    RiskReportDetailComponent
   ],
   imports: [
     BrowserModule,

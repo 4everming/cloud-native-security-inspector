@@ -3,11 +3,20 @@
 package harbor
 
 import (
+	"bytes"
 	"context"
+	"crypto/tls"
+	"encoding/json"
 	"fmt"
+	harborclient "github.com/goharbor/go-client/pkg/harbor"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/lib/log"
+	"io"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/goharbor/go-client/pkg/harbor"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/artifact"
@@ -18,15 +27,14 @@ import (
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/client/scan_all"
 	"github.com/goharbor/go-client/pkg/sdk/v2.0/models"
 	"github.com/pkg/errors"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/api/v1alpha1"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/data"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/data/cache"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/data/core"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/data/types"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/errs"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/api/v1alpha1"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/data"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/data/cache"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/data/core"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/data/types"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/errs"
 	v1 "k8s.io/api/core/v1"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // Adapter for handling data from Harbor.
@@ -37,6 +45,8 @@ type Adapter struct {
 	k8sClient k8client.Client
 	// cache client for reading caching data.
 	cache cache.Client
+	// clientConfig the client's info of the harbor instance
+	clientConfig harborclient.ClientSetConfig
 }
 
 // WithClient sets Harbor client.
@@ -56,6 +66,12 @@ func (a *Adapter) WithCache(cache cache.Client) *Adapter {
 	return a
 }
 
+// WithClientConfig sets the client config of this harbor instance
+func (a *Adapter) WithClientConfig(clientConfig harborclient.ClientSetConfig) *Adapter {
+	a.clientConfig = clientConfig
+	return a
+}
+
 // Read implements data.Provider.
 func (a *Adapter) Read(ctx context.Context, id core.ArtifactID, options ...data.ReadOption) ([]types.Store, error) {
 	// First check if cache is inited.
@@ -66,10 +82,7 @@ func (a *Adapter) Read(ctx context.Context, id core.ArtifactID, options ...data.
 			return stores, nil
 		}
 
-		// Just log error and directly get data from the provider.
-		// Get logger from context.
-		logger := log.FromContext(ctx)
-		logger.Error(err, "read data from cache")
+		log.Error(err, "read data from cache")
 	}
 
 	// Retrieve data from harbor.
@@ -140,8 +153,7 @@ func (a *Adapter) Read(ctx context.Context, id core.ArtifactID, options ...data.
 		err = a.cache.Write(ctx, id, stores)
 		if err != nil {
 			// just need to log error
-			logger := log.FromContext(ctx)
-			logger.Error(err, "write data to cache")
+			log.Error(err, "write data to cache")
 		}
 	}
 
@@ -560,4 +572,46 @@ func (a *Adapter) scanOnPush(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (a *Adapter) GetVulnerabilitiesList(ctx context.Context, id core.ArtifactID) (*vuln.Report, error) {
+	// TODO: When https://github.com/goharbor/harbor/issues/13468 is fixed, this api should use Harbor SDK
+	log.Infof("ProjectName: %s \n", id.Namespace())
+	log.Infof("RepositoryName: %s \n", id.Repository())
+	log.Infof("Reference: %s \n", id.Digest())
+	log.Infof("Registry: %s \n", id.Registry())
+
+	xAcceptVulnerabilities := core.DataSchemeVulnerability
+	requestURL := fmt.Sprintf("%s/api/v2.0/projects/%s/repositories/%s/artifacts/%s/additions/vulnerabilities",
+		a.clientConfig.URL, id.Namespace(), id.Repository(), id.Digest())
+	log.Infof("requestURL: %s \n", requestURL)
+
+	request, err := http.NewRequest("GET", requestURL, bytes.NewBuffer(nil))
+	if err != nil {
+		log.Infof("new request err: %v \n", err)
+		return nil, err
+	}
+	request.Header.Set("X-Accept-Vulnerabilities", xAcceptVulnerabilities)
+	request.SetBasicAuth(a.clientConfig.Username, a.clientConfig.Password)
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: a.clientConfig.Insecure,
+			},
+		},
+		Timeout: time.Second * 10,
+	}
+	res, err := client.Do(request)
+	if err != nil {
+		log.Errorf("find vulnerabilities err: %v \n", err)
+		return nil, err
+	}
+	var report map[string]*vuln.Report
+	err = json.NewDecoder(res.Body).Decode(&report)
+	if err != nil {
+		body, _ := io.ReadAll(res.Body)
+		log.Errorf("vuln report json unmarshal: (%s) \n", string(body[:256]))
+		return nil, err
+	}
+	return report[xAcceptVulnerabilities], nil
 }

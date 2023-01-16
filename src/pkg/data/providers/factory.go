@@ -7,9 +7,9 @@ import (
 
 	harborclient "github.com/goharbor/go-client/pkg/harbor"
 	"github.com/pkg/errors"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/api/v1alpha1"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/data/cache"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/data/providers/harbor"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/api/v1alpha1"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/data/cache"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/data/providers/harbor"
 	v1 "k8s.io/api/core/v1"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -24,8 +24,6 @@ func NewProvider(ctx context.Context, kclient k8client.Client, setting *v1alpha1
 		return nil, errors.Errorf("not implemented: adapter %s", setting.Spec.DataSource.Provider)
 	}
 }
-
-var _ Adapter = &harbor.Adapter{}
 
 // NewHarborAdapter constructs the harbor adapter.
 func NewHarborAdapter(ctx context.Context, kclient k8client.Client, setting *v1alpha1.Setting) (Adapter, error) {
@@ -62,6 +60,6 @@ func NewHarborAdapter(ctx context.Context, kclient k8client.Client, setting *v1a
 
 		ap.WithCache(cc)
 	}
-
+	ap.WithClientConfig(config)
 	return ap, nil
 }

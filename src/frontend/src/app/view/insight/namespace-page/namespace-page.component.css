@@ -44,18 +44,18 @@
   font-size: 32px;
   font-weight: 700;
 }
-.namespace-page clr-tabs::ng-deep .report .data div span.value clr-icon {
+.namespace-page clr-tabs::ng-deep .report .data div span.value cds-icon {
   width: 30px;
   height: 30px;
 }
-.namespace-page clr-tabs::ng-deep .report .data div.normal clr-icon {
-  color: green;
+.namespace-page clr-tabs::ng-deep .report .data div.normal cds-icon {
+  color: #3BA272;
 }
-.namespace-page clr-tabs::ng-deep .report .data div.abnormal-but-compliant clr-icon {
+.namespace-page clr-tabs::ng-deep .report .data div.abnormal-but-compliant cds-icon {
   color: yellow;
 }
-.namespace-page clr-tabs::ng-deep .report .data div.abnormal clr-icon {
-  color: red;
+.namespace-page clr-tabs::ng-deep .report .data div.abnormal cds-icon {
+  color: #EE6666;
 }
 .namespace-page clr-tabs::ng-deep .report .clickable {
   width: 242px;
@@ -99,10 +99,10 @@
   height: 10px;
   position: absolute;
   left: 0;
-  background-color: green;
+  background-color: #3BA272;
 }
 .namespace-page clr-tabs::ng-deep .report .clickable .card-block.abnormal .pro {
-  background-color: red !important;
+  background-color: #EE6666 !important;
 }
 .namespace-page clr-tabs::ng-deep::ng-deep clr-dg-column {
   background-color: #22343C;

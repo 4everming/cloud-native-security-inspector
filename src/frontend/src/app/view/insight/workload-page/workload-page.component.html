@@ -17,7 +17,7 @@
       <clr-dg-cell>
         <a href="javascript:;" (click)="toWorkload(violation)" >
           {{violation.workload.workload.metadata.name}}
-          <clr-icon shape="pop-out"></clr-icon>
+          <cds-icon shape="pop-out"></cds-icon>
         </a>
       </clr-dg-cell>
       <clr-dg-cell>{{violation.namespace}}</clr-dg-cell>
@@ -28,14 +28,17 @@
     </clr-dg-row>
   
     <clr-dg-footer>
-      <clr-dg-pagination #poolpagination [clrDgTotalItems]="shardService.allWorkloadList.length">
-        <clr-dg-page-size [clrPageSizeOptions]="pageSizeOptions">Workloads per page</clr-dg-page-size>
-        {{poolpagination.firstItem + 1}} - {{poolpagination.lastItem + 1}} of {{shardService.allWorkloadList.length}} workloads
+      <clr-dg-pagination #pagination [clrDgPageSize]="10">
+          <clr-dg-page-size [clrPageSizeOptions]="[10,20,50,100]">Workloads per page</clr-dg-page-size>
+          {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+          of {{pagination.totalItems}} workloads
       </clr-dg-pagination>
-    </clr-dg-footer>
+  </clr-dg-footer>
   </clr-datagrid>
-  <div class="report-detai-bg" (click)='showDetail($event)' *ngIf="shardService.currentWorkload && shardService.showWorkloadDetailFlag">
-    <div class="report-detai" [ngClass]="{'show': shardService.showWorkloadDetailFlag}" style="height: 100%;">
+  <div id="work-box" class="report-detai-bg" (click)='showDetail($event)' [hidden]="!(shardService.currentWorkload && shardService.showWorkloadDetailFlag)">
+    <div id="work-left" class="report-detai-left"></div>
+    <div id="work-resize"></div>
+    <div id="work-right" class="report-detai" [ngClass]="{'show': shardService.showWorkloadDetailFlag}" style="height: 100%;">
       <app-workload-detail></app-workload-detail>
     </div>
   </div>

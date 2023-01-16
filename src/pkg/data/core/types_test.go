@@ -72,3 +72,25 @@ func (suite *TypesSuite) TestTag() {
 
 	suite.Equal("v1.21.1", ID.Tag())
 }
+
+func (suite *TypesSuite) TestOmittedRegistryCase() {
+	image := "mariadb:10"
+	imageID := "mariadb@sha256:8c15c3def7ae1bb408c96d322a3cc0346dba9921964d8f9897312fe17e127b90"
+	ID := ParseArtifactIDFrom(image, imageID)
+	suite.Equal("10", ID.tag)
+	suite.Equal("library", ID.Namespace())
+	suite.Equal("docker.io", ID.Registry())
+	suite.Equal("mariadb", ID.Repository())
+	suite.Equal("sha256:8c15c3def7ae1bb408c96d322a3cc0346dba9921964d8f9897312fe17e127b90", ID.Digest())
+}
+
+func (suite *TypesSuite) TestOmittedRegistryWithOrg() {
+	image := "federatedai/kubefate:v1.4.5"
+	imageID := "federatedai/kubefate@sha256:13b6d5b836f561fd035819ce53f8a97dfeaf703cddbf0d5974f56c9040f1831"
+	ID := ParseArtifactIDFrom(image, imageID)
+	suite.Equal("v1.4.5", ID.tag)
+	suite.Equal("federatedai", ID.Namespace())
+	suite.Equal("docker.io", ID.Registry())
+	suite.Equal("kubefate", ID.Repository())
+	suite.Equal("sha256:13b6d5b836f561fd035819ce53f8a97dfeaf703cddbf0d5974f56c9040f1831", ID.Digest())
+}

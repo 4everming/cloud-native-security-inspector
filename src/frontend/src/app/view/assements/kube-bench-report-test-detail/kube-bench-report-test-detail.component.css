@@ -1,0 +1,39 @@
+.report {
+  position: relative;
+  padding: 15px;
+}
+.report .angle-top {
+  transform: rotate(-90deg);
+  width: 20px;
+  height: 20px;
+  color: #fff;
+  margin-left: 15px;
+}
+.report .status {
+  display: flex;
+  align-items: center;
+}
+.report .status.pass {
+  color: #91CB74;
+}
+.report .status.pass cds-icon {
+  color: #91CB74;
+}
+.report .status.fail {
+  color: #EE6666;
+}
+.report .status.fail cds-icon {
+  color: #EE6666;
+}
+.report .status.info {
+  color: #5470C6;
+}
+.report .status.info cds-icon {
+  color: #5470C6;
+}
+.report .status.warn {
+  color: #FAC858;
+}
+.report .status.warn cds-icon {
+  color: #FAC858;
+}

@@ -34,8 +34,8 @@
           <li>
             <b>Passed:</b>
             <span>
-              <clr-icon *ngIf="!shardService.currentWorkload.workload.passed" shape="times-circle" style="color: red;" class="is-solid"></clr-icon>
-              <clr-icon *ngIf="shardService.currentWorkload.workload.passed" shape="success-standard" style="color: green;" class="is-solid"></clr-icon>
+              <cds-icon *ngIf="!shardService.currentWorkload.workload.passed" shape="times-circle" style="color: red;" class="is-solid"></cds-icon>
+              <cds-icon *ngIf="shardService.currentWorkload.workload.passed" shape="success-standard" style="color: green;" class="is-solid"></cds-icon>
               {{shardService.currentWorkload.workload.passed}}
             </span>
           </li>
@@ -94,7 +94,7 @@
       <clr-accordion-content *clrIfExpanded>
         <ul class="list warp-1" *ngFor="let item of shardService.currentWorkload.workload.workload.pods">
           <li>
-            <b>PodName: </b>
+            <b>Pod Name: </b>
             <span>
               {{item.metadata.name}}
             </span>
@@ -106,7 +106,7 @@
             </span>
           </li>
           <li>
-            <b>PodNamespace: </b>
+            <b>Pod Namespace: </b>
             <span>
               {{item.metadata.namespace}}
             </span>

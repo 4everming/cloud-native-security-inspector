@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/api/v1alpha1"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/api/v1alpha1"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/lib/log"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,13 +27,14 @@ type Scanner interface {
 	ScanNamespaces(ctx context.Context, selector *metav1.LabelSelector, skips []string) ([]corev1.ObjectReference, error)
 	// ScanWorkloads scans all the workloads that matches the selector under the namespace.
 	ScanWorkloads(ctx context.Context, namespace corev1.LocalObjectReference, selector *metav1.LabelSelector) ([]*v1alpha1.Workload, error)
+	// ScanOtherResource scans any kind resource that matches the selector under the namespace.
+	ScanOtherResource(ctx context.Context, namespace corev1.LocalObjectReference, selector *metav1.LabelSelector, list client.ObjectList) error
 }
 
 // DefaultScanner implements inspection.Scanner.
 type DefaultScanner struct {
 	client.Client
 	scheme *runtime.Scheme
-	logger logr.Logger
 }
 
 // NewScanner news a default scanner.
@@ -50,12 +51,6 @@ func (ds *DefaultScanner) WithScheme(scheme *runtime.Scheme) *DefaultScanner {
 // UseClient uses the client.
 func (ds *DefaultScanner) UseClient(client client.Client) *DefaultScanner {
 	ds.Client = client
-	return ds
-}
-
-//SetLogger sets the logger.
-func (ds *DefaultScanner) SetLogger(logger logr.Logger) *DefaultScanner {
-	ds.logger = logger
 	return ds
 }
 
@@ -84,7 +79,7 @@ func (ds *DefaultScanner) ScanNamespaces(ctx context.Context, selector *metav1.L
 	var nss []corev1.ObjectReference
 	for _, ns := range nsl.Items {
 		if needSkip(ns.Name) {
-			ds.logger.Info("skip namespace", "namespace", ns)
+			log.Info("skip namespace", "namespace", ns)
 			continue
 		}
 
@@ -192,6 +187,16 @@ func (ds *DefaultScanner) getReplicaSetOwnerRef(ctx context.Context, namespacedN
 	}
 
 	return extractOwnerRef(namespacedName.Namespace, rps.GetOwnerReferences()), nil
+}
+
+// ScanOtherResource implements inspection.Scanner.
+func (ds *DefaultScanner) ScanOtherResource(ctx context.Context, namespace corev1.LocalObjectReference,
+	selector *metav1.LabelSelector, list client.ObjectList) error {
+	if err := ds.List(ctx, list, client.InNamespace(namespace.Name), client.MatchingLabelsSelector{Selector: convertLabelSelector(selector)}); err != nil {
+		return errors.Wrap(err, "list")
+	}
+
+	return nil
 }
 
 func extractContainers(pod corev1.Pod) []*v1alpha1.Container {

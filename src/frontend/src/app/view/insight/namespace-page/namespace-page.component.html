@@ -24,7 +24,7 @@
             <div class="data">
               <a class="card clickable">
                 <div class="card-block normal">
-                  <clr-icon style="width: 25px; height: 25px;" shape="check-circle" class="is-solid"></clr-icon>
+                  <cds-icon style="width: 25px; height: 25px;" shape="check-circle" class="is-solid"></cds-icon>
                   <div class="pre">
                     <div class="pro" *ngIf="shardService.showAbnormal + shardService.showNormal !== 0" [style]="{width: shardService.showNormal/(shardService.showAbnormal + shardService.showNormal)*100 + 'px'}"></div>
                   </div>
@@ -43,7 +43,7 @@
               </a>
               <a class="card clickable">
                 <div class="card-block abnormal">
-                  <clr-icon style="width: 25px; height: 25px;" shape="exclamation-circle" class="is-solid"></clr-icon>
+                  <cds-icon style="width: 25px; height: 25px;" shape="exclamation-circle" class="is-solid"></cds-icon>
                     <div class="pre">
                       <div class="pro" *ngIf="shardService.showAbnormal + shardService.showNormal !== 0" [style]="{width: shardService.showAbnormal/(shardService.showAbnormal + shardService.showNormal)*100 + 'px'}"></div>
                     </div>
@@ -90,30 +90,31 @@
               <app-namesapce-histogram #namespaceHistogram [chartOptions]="shardService.workloadChartbarOption"></app-namesapce-histogram>
               <clr-datagrid>
                 <clr-dg-column [clrDgField]="'workload.workload.metadata.name'">{{'CommonlyUse.name'|translate}}</clr-dg-column>
-                <clr-dg-column [clrDgField]="'workload.workload.metadata.namespace'">{{'CommonlyUse.namespace'|translate}}</clr-dg-column>
+                <!-- <clr-dg-column [clrDgField]="'workload.workload.metadata.namespace'">{{'CommonlyUse.namespace'|translate}}</clr-dg-column> -->
                 <clr-dg-column [clrDgField]="'workload.workload.pods.length'">{{'CommonlyUse.type'|translate}}</clr-dg-column>
                 <clr-dg-column [clrDgField]="'workload.workload.metadata.apiVersion'">{{'CommonlyUse.containers_total'|translate}}  </clr-dg-column>
-                <clr-dg-column [clrDgSortBy]="'created_at'">{{'CommonlyUse.api_version'|translate}}</clr-dg-column>
+                <!-- <clr-dg-column [clrDgSortBy]="'created_at'">{{'CommonlyUse.api_version'|translate}}</clr-dg-column> -->
               
                 <clr-dg-row *clrDgItems="let violation of shardService.currentNamespaceviolationList">
                   <clr-dg-cell>
                     <a href="javascript:;" (click)="toWorkload(violation)" >
                       {{violation.workload.workload.metadata.name}}
-                      <clr-icon shape="pop-out"></clr-icon>
+                      <cds-icon shape="pop-out"></cds-icon>
                     </a>
                   </clr-dg-cell>
-                  <clr-dg-cell>{{violation.workload.workload.metadata.namespace}}</clr-dg-cell>
+                  <!-- <clr-dg-cell>{{violation.workload.workload.metadata.namespace}}</clr-dg-cell> -->
                   <clr-dg-cell>{{violation.workload.workload.metadata.kind}}</clr-dg-cell>
                   <clr-dg-cell>{{violation.workload.workload.pods.length}}</clr-dg-cell>
-                  <clr-dg-cell>{{violation.workload.workload.metadata.apiVersion}}</clr-dg-cell>
+                  <!-- <clr-dg-cell>{{violation.workload.workload.metadata.apiVersion}}</clr-dg-cell> -->
                 </clr-dg-row>
-              
+
                 <clr-dg-footer>
-                  <clr-dg-pagination #poolpagination [clrDgTotalItems]="shardService.violationList.length">
-                    <clr-dg-page-size [clrPageSizeOptions]="pageSizeOptions">violations per page</clr-dg-page-size>
-                    {{poolpagination.firstItem + 1}} - {{poolpagination.lastItem + 1}} of {{shardService.violationList.length}} Pools
+                  <clr-dg-pagination #pagination [clrDgPageSize]="10">
+                      <clr-dg-page-size [clrPageSizeOptions]="[10,20,50,100]">Workloads per page</clr-dg-page-size>
+                      {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+                      of {{pagination.totalItems}} workloads
                   </clr-dg-pagination>
-                </clr-dg-footer>
+              </clr-dg-footer>
               </clr-datagrid>
             </clr-tab-content>
         </ng-template> 

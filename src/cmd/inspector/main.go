@@ -5,20 +5,18 @@ package main
 import (
 	"context"
 	"flag"
-	"os"
-
-	"github.com/vmware-tanzu/cloud-native-security-inspector/api/v1alpha1"
-	"github.com/vmware-tanzu/cloud-native-security-inspector/pkg/inspection"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/api/v1alpha1"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/lib/log"
+	"github.com/vmware-tanzu/cloud-native-security-inspector/src/pkg/inspection"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 var (
-	log     = ctrl.Log.WithName("inspector")
 	scheme  = runtime.NewScheme()
 	rootCtx = context.Background()
 )
@@ -36,13 +34,9 @@ func main() {
 	var policy string
 
 	flag.StringVar(&policy, "policy", "", "name of the inspection policy")
-	opts := zap.Options{
-		Development: true,
-	}
-	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
-
-	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	log.Infof("policy name %s", policy)
+	log.Info("inspector scanning")
 
 	k8sClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{
 		Scheme: scheme,
@@ -64,7 +58,6 @@ func main() {
 
 	runner := inspection.NewController().
 		WithScheme(scheme).
-		WithLogger(log).
 		WithK8sClient(k8sClient).
 		CTRL()
 
