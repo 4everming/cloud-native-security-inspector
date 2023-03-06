@@ -22,6 +22,7 @@ spec:
             - --logtostderr=true
             - --v=10
           image: {{ .Values.image.repository }}/kubebuilder/kube-rbac-proxy:v0.8.0
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           name: kube-rbac-proxy
           ports:
             - containerPort: 8443
@@ -33,6 +34,7 @@ spec:
           command:
             - /manager
           image: {{ .Values.image.repository }}/manager:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           livenessProbe:
             httpGet:
               path: /healthz
@@ -77,6 +79,7 @@ spec:
     spec:
       containers:
         - image: {{ .Values.image.repository }}/exporter:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: 6780
               name: http
@@ -106,6 +109,6 @@ spec:
       containers:
         - name: cloud-native-security-inspector-frontend
           image: {{ .Values.image.repository }}/portal:{{ .Values.image.tag }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: 3800

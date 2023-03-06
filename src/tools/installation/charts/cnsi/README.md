@@ -17,11 +17,6 @@ $ helm install [release-name] src/tools/installation/charts/cnsi
 ```shell
 $ helm uninstall [release-name]
 ```
-This will not delete CRD. You can get and delete CRD manually using below commands:
-```shell
-$ kubectl get crd
-$ kubectl delete crd assessmentreports.goharbor.goharbor.io inspectionpolicies.goharbor.goharbor.io settings.goharbor.goharbor.io
-```
 ## Configuration
 You can specify your own image registry and image tag to install.
 ```shell
@@ -32,9 +27,9 @@ If you'd like to install Cloud Native Security Inspector without OpenSearch:
 $ helm install [release-name] src/tools/installation/charts/cnsi/ --set opensearch.enabled=false
 ```
 
-| Parameter | Description                                                                                   | Default                             |
-|----------|-----------------------------------------------------------------------------------------------|-------------------------------------|
-| `image.repository`  | `The repository to pull images`                                                               | `projects.registry.vmware.com/cnsi` |
-| `image.tag`  | `The tags of the images`                                                                      | `0.3`                               |
-| `image.pullPolicy`  | `The image pull policy in Kubernetes`                                                         | `IfNotPresent`                      |
-| `opensearch.enabled`  | `Flag to indicate if OpenSearch will be installed along with Cloud Native Security Inspector` | `true`                              |
+| Parameter            | Description                                                                                   | Default                             |
+|----------------------|-----------------------------------------------------------------------------------------------|-------------------------------------|
+| `image.repository`   | `The repository to pull images`                                                               | `projects.registry.vmware.com/cnsi` |
+| `image.tag`          | `The tags of the images`                                                                      | `0.3`                               |
+| `image.pullPolicy`   | `The image pull policy in Kubernetes`                                                         | `IfNotPresent`                      |
+| `opensearch.enabled` | `Flag to indicate if OpenSearch will be installed along with Cloud Native Security Inspector` | `true`                              |
