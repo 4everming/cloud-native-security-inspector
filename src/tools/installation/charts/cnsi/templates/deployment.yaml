@@ -86,3 +86,26 @@ spec:
       securityContext:
         runAsNonRoot: true
       terminationGracePeriodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-native-security-inspector-portal
+  namespace: cnsi-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cloud-native-security-inspector-portal: portal
+  template:
+    metadata:
+      labels:
+        cloud-native-security-inspector-portal: portal
+    spec:
+      serviceAccountName: cloud-native-security-inspector-portal-serviceaccount
+      containers:
+        - name: cloud-native-security-inspector-frontend
+          image: {{ .Values.image.repository }}/portal:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 3800
